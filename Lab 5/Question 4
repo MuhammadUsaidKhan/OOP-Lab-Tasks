@@ -1,0 +1,48 @@
+#include <iostream>
+#include <string>
+using namespace std;
+class BankAccount{
+    private:
+        string accountNumber;
+        string accountHolderName;
+        double balance;
+    public:
+        BankAccount(string an, string ahn, double b): accountNumber(an), accountHolderName(ahn), balance(b){}
+        void deposit(double amount){
+            if(amount>0){
+                balance = balance + amount;
+            }
+            
+        }
+        void withdraw(double amount){
+            if(amount>balance){
+                cout<<"Out of Balance!! Cannot Withdraw."<<endl;
+            }
+            else if(amount<=balance){
+                balance = balance - amount;
+            }
+        }
+        void display(){
+            cout<<"Account Number: "<<accountNumber<<endl;
+            cout<<"Account Holder Name: "<<accountHolderName<<endl;
+            cout<<"Balance: "<<balance<<endl;
+        }
+};
+int main() {
+    BankAccount accounts[3] = {
+        BankAccount("123456789", "Usaid", 1000.0),
+        BankAccount("987654321", "Ali", 1500.0),
+        BankAccount("456789123", "Sufyaan", 2000.0)
+    };
+    int i;
+    for(i=0; i<3; i++){
+        accounts[i].display();
+    }
+    for(i=0; i<3; i++){
+        accounts[i].deposit(500);
+        accounts[i].display();
+        accounts[i].withdraw(200);
+        accounts[i].display();
+    }
+    return 0;
+}
