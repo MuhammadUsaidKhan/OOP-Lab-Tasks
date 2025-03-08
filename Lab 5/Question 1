@@ -1,0 +1,49 @@
+#include <string>
+using namespace std;
+class Square{
+        private:
+            float sideLength;
+            float area;
+            static float allareas;
+        public:
+            Square(){
+                sideLength = 0.0;
+                area = 0.0;
+            }
+            Square(float sideLength){
+                this->sideLength = sideLength;
+            }
+            void set_sideLength(float sl){
+                sideLength = sl;
+            }
+            void set_area(float area){
+                this->area = area;
+            }
+            float get_sideLength(){
+                return sideLength;
+            }
+            float get_area(){
+                return area;
+            }
+            static float get_allareas(){
+                return allareas;
+            }
+            void calculate_area(){
+                area = sideLength * sideLength;
+                allareas+=area;
+            }
+};
+float Square::allareas = 0.0;
+int main() {
+    Square s1(5),s2(2),s3(6);
+    s1.calculate_area();
+    cout<<s1.get_area()<<endl;
+    cout<<Square :: get_allareas()<<endl;
+    s2.calculate_area();
+    cout<<s2.get_area()<<endl;
+    cout<<Square :: get_allareas()<<endl;
+    s3.calculate_area();
+    cout<<s3.get_area()<<endl;
+    cout<<Square :: get_allareas()<<endl;
+    return 0;
+}
