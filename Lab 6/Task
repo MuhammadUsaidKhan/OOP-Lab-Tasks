@@ -1,1 +1,97 @@
-
+#include <iostream>
+#include <string>
+using namespace std;
+class Message{
+    private:
+        string text;
+    public:
+        Message(string t):text(t){}
+        string get_text() const{
+            return text;
+        }
+        string toString() const{
+            return text;
+        }
+        void modifyText(string text){
+            this->text = text;
+        }
+        void encodeMessage(){
+            for(char& c : text){
+                if((c>='A' && c<='Z') || (c>='a' && c<='z')){
+                    c++;
+                }
+                else if(c=='Z'){
+                    c='A';
+                }
+                else if(c=='z'){
+                    c= 'a';
+                }
+            }
+        }
+};
+class SMS : public Message{
+    private:
+        string recipientContactNo;
+    public:
+        SMS(string t, string rcn):Message(t), recipientContactNo(rcn){}
+        void setContactNumber(string cn){
+            recipientContactNo = cn;
+        }
+        string getContactNumber(){
+            return recipientContactNo;
+        }
+        string toString() {
+            return "Recipient: " + recipientContactNo + " Text: " + get_text() + "\n";
+        }
+};
+class Email: public Message{
+    private:
+        string sender;
+        string reciever;
+        string subject;
+    public:
+        Email(string t, string s, string r, string sub):Message(t), sender(s), reciever(r), subject(sub){}
+        string getSender(){
+            return sender;
+        }
+        string getReciever(){
+            return reciever;
+        }
+        string getSubject(){
+            return subject;
+        }
+        void setSender(string sender){
+            this->sender = sender;
+        }
+        void setReciever(string reciever){
+            this->reciever = reciever;
+        }
+        void setSubject(string subject){
+            this->subject = subject;
+        }
+        string toString() {
+            return "Sender: " + sender + " Reciever: " + reciever + " Subject: " + subject + " Text: " + get_text() + "\n";
+        }
+};
+bool ContainsKeyword(const Message& messageObject, const string& keyword){
+    return messageObject.get_text().find(keyword) != string::npos;
+}
+int main() {
+    SMS s("Hello", "03132348018");
+    cout<<s.toString();
+    s.encodeMessage();
+    cout<<s.toString();
+    s.modifyText("Hello I am Muhammad Usaid Khan");
+    cout<<s.toString();
+    s.encodeMessage();
+    cout<<s.toString();
+    Email e("Hello", "Usaid", "Ali", "OOP Discussion");
+    cout<<e.toString();
+    e.encodeMessage();
+    cout<<e.toString();
+    e.modifyText("Hello I am Muhammad Usaid Khan");
+    cout<<e.toString();
+    e.encodeMessage();
+    cout<<e.toString();
+    return 0;
+}
