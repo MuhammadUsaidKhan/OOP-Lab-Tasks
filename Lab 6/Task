@@ -93,5 +93,18 @@ int main() {
     cout<<e.toString();
     e.encodeMessage();
     cout<<e.toString();
+    cout << "\nTesting ContainsKeyword function:\n";
+
+    // Test with SMS object
+    SMS smsTest("This is a test message", "03132348018");
+    cout << "SMS Text: " << smsTest.get_text() << endl;
+    cout << "Contains 'test': " << (ContainsKeyword(smsTest, "test") ? "Yes" : "No") << endl;
+    cout << "Contains 'hello': " << (ContainsKeyword(smsTest, "hello") ? "Yes" : "No") << endl;
+
+    // Test with Email object
+    Email emailTest("This is another test email", "sender@example.com", "receiver@example.com", "Test Subject");
+    cout << "Email Text: " << emailTest.get_text() << endl;
+    cout << "Contains 'email': " << (ContainsKeyword(emailTest, "email") ? "Yes" : "No") << endl;
+    cout << "Contains 'example': " << (ContainsKeyword(emailTest, "example") ? "Yes" : "No") << endl;
     return 0;
 }
