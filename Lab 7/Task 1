@@ -1,1 +1,160 @@
-
+#include <iostream>
+#include <string>
+using namespace std;
+class Account{
+    protected:
+        int accountNumber;
+        double balance;
+        string accountHolderName;
+        string accountType;
+    public:
+        Account(int an, double b, string ahn, string at):accountNumber(an), balance(b), accountHolderName(ahn), accountType(at){}
+        void setaccountNumber(int accountNumber){
+            this->accountNumber = accountNumber;
+        }
+        void setbalance(double balance){
+            this->balance = balance;
+        }
+        void setaccountHolderName(string accountHolderName){
+            this->accountHolderName = accountHolderName;
+        }
+        void setaccountType(string accountType){
+            this->accountType = accountType;
+        }
+        int getraccountNumber(){
+            return accountNumber;
+        }
+        double getbalance(){
+            return balance;
+        }
+        string getaccountHolderName(){
+            return accountHolderName;
+        }
+        string getaccountType(){
+            return accountType;
+        }
+        void deposit(double amount){
+            if(amount >0){
+                balance = balance + amount;
+            }
+            else{
+                cout<<"Enter valid amount!"<<endl;
+            }
+        }
+        virtual void withdraw(double amount){
+            if(balance < amount || amount==0){
+                cout<<"Insufficient Funds!! Cannot Withdraw!"<<endl;
+            }
+            else{
+                balance = balance - amount;
+            }
+        }
+        void getAccountInfo(){
+            cout<<"Account Number: "<<accountNumber<<endl;
+            cout<<"Balance: "<<balance<<endl;
+            cout<<"Account Holder Name: "<<accountHolderName<<endl;
+            cout<<"Account Type: "<<accountType<<endl;
+        }
+        virtual void calculateInterest(){
+            cout<<"Interest calculation not defined yet"<<endl;
+        }
+        virtual void printStatement(){
+            cout<<"Statement printint not defined yet"<<endl;
+        }
+};
+class SavingsAccount : public Account{
+    private:
+        float interestRate;
+        double minimumBalance;
+    public:
+        SavingsAccount(int an, double b, string ahn, float ir, double mb): Account(an, b, ahn, "Savings Account"), interestRate(ir), minimumBalance(mb){}
+        void setinterestRate(float ir){
+            interestRate = ir;
+        }
+        void setminimumBalance(double mb){
+            minimumBalance = mb;
+        }
+        float getinterestRate(){
+            return interestRate;
+        }
+        double getminimumBalance(){
+            return minimumBalance;
+        }
+        void calculateInterest(){
+            double interest = balance * (interestRate/100);
+            balance += interest;
+            cout<<"Interest: "<<interest<<endl;
+            cout<<"New Balance: "<<balance<<endl;
+        }
+        void withdraw(double amount){
+            if(amount >0 && (balance - amount)>minimumBalance){
+                balance -= amount;
+            }
+            else{
+                cout<<"Invalid withdrawal amount or minimum balance violation"<<endl;
+            }
+        }
+        void printStatement(){
+            getAccountInfo();
+            cout<<"Interest Rate: "<<interestRate<<"%"<<endl;
+            cout<<"Minimum Balance: "<<minimumBalance<<endl;
+        }
+};
+class CheckingAccount: public Account{
+    public:
+        CheckingAccount(int an, double b, string ahn): Account(an, b, ahn, "Checking Account"){}
+        void printStatement(){
+            getAccountInfo();
+        }
+};
+class FixedDepositAccount: public Account{
+    private:
+        string maturityDate;
+        float fixedInterestRate;
+    public:
+        FixedDepositAccount(int an, double b, string ahn, string md, float fir):Account(an, b, ahn, "Fixed Deposit Account"), maturityDate(md), fixedInterestRate(fir){}
+        void setmaturityDate(string date){
+            maturityDate = date;
+        }
+        void setfixedInterestRate(float fir){
+            fixedInterestRate = fir;
+        }
+        string getmaturityDate(){
+            return maturityDate;
+        }
+        float getfixedInterestRate(){
+            return fixedInterestRate;
+        }
+        void calculateInterest(){
+            double interest = balance * (fixedInterestRate/100);
+            balance += interest;
+            cout<<"Fixed Interest: "<<interest<<endl;
+            cout<<"New balance: "<<balance<<endl;
+        }
+        void withdraw(double amount){
+            cout<<"Withdrawals are not allowed until maturity Date: "<<maturityDate<<endl;
+        }
+        void printStatement(){
+            getAccountInfo();
+            cout<<"Fixed Interest Rate: "<<fixedInterestRate<<"%"<<endl;
+            cout<<"Maturity Date: "<<maturityDate<<endl;
+        }
+};
+int main() {
+    SavingsAccount savings(12345, 1000, "Usaid Khan", 5.0, 500);
+    savings.deposit(500);
+    savings.withdraw(200);
+    savings.calculateInterest();
+    savings.printStatement();
+    
+    CheckingAccount checking(678910, 2000, "Ali Khurram");
+    checking.deposit(1000);
+    checking.withdraw(500);
+    checking.printStatement();
+    
+    FixedDepositAccount fixeddeposit(321781, 5000, "Bilal Rashid", "2025-12-31", 7.5);
+    fixeddeposit.calculateInterest();
+    fixeddeposit.withdraw(1000);
+    fixeddeposit.printStatement();
+    return 0;
+}
