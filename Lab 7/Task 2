@@ -1,0 +1,128 @@
+#include <iostream>
+#include <string>
+#include <cmath>
+using namespace std;
+class Shape {
+protected:
+    double position[2];
+    string colour;
+    double borderThickness;
+public:
+    Shape(double x, double y, string c, double bt=1.0) : colour(c), borderThickness(bt) {
+        position[0] = x;
+        position[1] = y;
+    }
+    virtual void draw() {
+        cout << "Drawing a generic shape at position (" << position[0] << ", " << position[1] << ")" << endl;
+    }
+    virtual double calculateArea() {
+        cout << "Area is not defined for this Class!" << endl;
+        return 0.0;
+    }
+    virtual double calculatePerimeter() {
+        cout << "Perimeter is not defined for this class!" << endl;
+        return 0.0;
+    }
+};
+
+class Circle : public Shape {
+private:
+    double radius;
+public:
+    Circle(double x, double y, string c, double r,double bt=1.0) : Shape(x, y, c, bt), radius(r) {}
+    void draw() {
+        cout << "Drawing a Circle at Position (" << position[0] << ", " << position[1] << ") with radius " << radius << endl;
+    }
+    double calculateArea() {
+        double area = 3.14159 * radius * radius;
+        return area;
+    }
+    double calculatePerimeter() {
+        double perimeter = 2 * 3.14159 * radius;
+        return perimeter;
+    }
+};
+
+class Rectangle : public Shape {
+private:
+    double width;
+    double height;
+public:
+    Rectangle(double x, double y, string c, double w, double h, double bt = 1.0) : Shape(x, y, c, bt), width(w), height(h) {}
+    void draw() {
+        cout << "Drawing a Rectangle at Position (" << position[0] << ", " << position[1] << ") with width " << width << " and height " << height << endl;
+    }
+    double calculateArea() {
+        double area = width * height;
+        return area;
+    }
+    double calculatePerimeter() {
+        double perimeter = 2 * (width + height);
+        return perimeter;
+    }
+};
+class Triangle : public Shape {
+private:
+    double base;
+    double height;
+    double side1, side2, side3;
+public:
+    Triangle(double x, double y, string c,double b, double h, double s1, double s2, double s3, double bt = 1.0) : Shape(x, y, c, bt), base(b), height(h), side1(s1), side2(s2), side3(s3) {}
+    void draw() {
+        cout << "Drawing a Triangle at Position (" << position[0] << ", " << position[1] << ") with base " << base << " and height " << height << endl;
+    }
+    double calculateArea() {
+        double area = 0.5 * base * height;
+        return area;
+    }
+    double calculatePerimeter() {
+        double perimeter = side1 + side2 + side3;
+        return perimeter;
+    }
+};
+class Polygon : public Shape {
+private:
+    int numSides;
+    double sideLength;
+public:
+    Polygon(double x, double y, string c, int ns, double sl, double bt = 1.0) : Shape(x, y, c, bt), numSides(ns), sideLength(sl) {}
+    void draw() {
+        cout << "Drawing a Polygon at Position (" << position[0] << ", " << position[1] << ") with total number of Sides " << numSides << " and side length " << sideLength << endl;
+    }
+    double calculateArea() {
+        double area = (numSides * sideLength * sideLength)/(4 * tan(3.14159/numSides));
+        return area;
+    }
+    double calculatePerimeter() {
+        double perimeter = numSides * sideLength;
+        return perimeter;
+    }
+};
+
+int main(){
+    // Create a Circle object
+    Circle circle(0, 0,"Red" ,5);
+    circle.draw();
+    cout << "Area: " << circle.calculateArea() << endl;
+    cout << "Perimeter: " << circle.calculatePerimeter() << endl;
+
+    // Create a Rectangle object
+    Rectangle rectangle( 10, 10,"Blue", 8, 6);
+    rectangle.draw();
+    cout << "Area: " << rectangle.calculateArea() << endl;
+    cout << "Perimeter: " << rectangle.calculatePerimeter() << endl;
+
+    // Create a Triangle object
+    Triangle triangle( 20, 20, "Green",10, 8, 5, 5, 5);
+    triangle.draw();
+    cout << "Area: " << triangle.calculateArea() << endl;
+    cout << "Perimeter: " << triangle.calculatePerimeter() << endl;
+
+    // Create a Polygon object
+    Polygon polygon( 30, 30,"Yellow", 6, 4);
+    polygon.draw();
+    cout << "Area: " << polygon.calculateArea() << endl;
+    cout << "Perimeter: " << polygon.calculatePerimeter() << endl;
+
+    return 0;
+}
