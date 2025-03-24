@@ -1,1 +1,94 @@
-
+#include <iostream>
+#include <string>
+using namespace std;
+#include <cmath>
+class Device{
+    protected:
+        string deviceID;
+        string deviceType;
+        double powerRating;
+        bool status;
+    public:
+        Device(string did, string dt, double pr, bool s): deviceID(deviceID), deviceType(dt), powerRating(pr), status(s){}
+        virtual void turnOn(){
+            status = true;
+        }
+        virtual void turnOff(){
+            status = false;
+        }
+        virtual double calculatePowerUsage(int hours){
+            cout<<"This Functionality is not defined for this class!"<<endl;
+            return 0.0;
+        }
+};
+class Fans: public Device{
+    private:
+        double speedFactor;
+    public:
+        virtual void turnOn(){
+            status = true;
+            cout<<"Ceiling Fan [ID: "<<deviceID<<"] turned ON at Speed "<<speedFactor<<endl;
+        }
+        virtual void turnOff(){
+            status = false;
+            cout<<"Ceiling Fan [ID: "<<deviceID<<"] turned OFF at Speed "<<speedFactor<<endl;
+        }
+        Fans(string did, string dt, double pr, bool s, double sf) : Device(did, dt, pr, s), speedFactor(sf){}
+        double calculatePowerUsage(int hours){
+            double rating = powerRating * hours * speedFactor;
+            return rating;
+        }
+        
+};
+class Lights: public Device{
+    public:
+        virtual void turnOn(){
+            status = true;
+            cout<<"LED Light [ID: "<<deviceID<<"] turned ON"<<endl;
+        }
+        virtual void turnOff(){
+            status = false;
+            cout<<"LED Light [ID: "<<deviceID<<"] turned OFF"<<endl;
+        }
+    Lights(string did, string dt, double pr, bool s): Device(did, dt, pr, s){}
+        double calculatePowerUsage(int hours){
+            double rating = powerRating * hours;
+            return rating;
+        }
+};
+class AirConditioners: public Device{
+    private:
+        int currentTemp = new int;
+        int desiredTemp = new int;
+    public:
+        virtual void turnOn(){
+            status = true;
+            cout<<"Split AC [ID: "<<deviceID<<"] turned ON, Cooling to "<<currentTemp<<"°C"<<endl;
+        }
+        virtual void turnOff(){
+            status = false;
+            cout<<"Split AC [ID: "<<deviceID<<"] turned OFF, Cooling to "<<currentTemp<<"°C"<<endl;
+        }
+        AirConditioners(string did, string dt, double pr, bool s, int ct, int dt): Device(did, dt, pr, s), currentTemp(ct), desiredTemp(dt){}
+        double calculatePowerUsage(int hours){
+            double rating = powerRating * hours * (1 - (currentTemp - desiredTemp)/100);
+            return rating;
+        }
+};
+class SecuritySystems{
+    private;
+        bool securityStatus;
+    public:
+        SecuritySystems(string did, string dt, double pr, bool s, bool ss) : Device(did, dt, pr, s), securityStatus(ss){}
+        virtual void turnOn(){
+            status = true;
+            cout<<"Split AC [ID: "<<deviceID<<"] turned ON, Cooling to "<<currentTemp<<"°C"<<endl;
+        }
+        virtual void turnOff(){
+            status = false;
+            cout<<"Split AC [ID: "<<deviceID<<"] turned OFF, Cooling to "<<currentTemp<<"°C"<<endl;
+        }
+};
+int main() {
+    return 0;
+}
