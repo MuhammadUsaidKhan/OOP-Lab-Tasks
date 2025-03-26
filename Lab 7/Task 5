@@ -1,0 +1,229 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int MAX_ITEMS = 100;
+const int MAX_BORROWERS = 50;
+
+class Media {
+protected:
+    string title;
+    string publicationDate;
+    string uniqueID;
+    string publisher;
+    bool checkedOut;
+    string borrowerList[MAX_BORROWERS];
+    int borrowerCount;
+
+public:
+    Media(string t, string pd, string id, string pub)
+        : title(t), publicationDate(pd), uniqueID(id), publisher(pub), 
+          checkedOut(false), borrowerCount(0) {}
+
+    virtual void displayInfo() {
+        cout << "Title: " << title << endl;
+        cout << "Publication Date: " << publicationDate << endl;
+        cout << "ID: " << uniqueID << endl;
+        cout << "Publisher: " << publisher << endl;
+        cout << "Status: " << (checkedOut ? "Checked Out" : "Available") << endl;
+    }
+
+    virtual bool checkOut(string borrowerName) {
+        if (!checkedOut && borrowerCount < MAX_BORROWERS) {
+            checkedOut = true;
+            borrowerList[borrowerCount++] = borrowerName;
+            cout << title << " has been checked out by " << borrowerName << endl;
+            return true;
+        }
+        cout << "Cannot check out " << title << endl;
+        return false;
+    }
+
+    virtual bool returnItem() {
+        if (checkedOut) {
+            checkedOut = false;
+            cout << title << " has been returned" << endl;
+            return true;
+        }
+        cout << title << " was not checked out" << endl;
+        return false;
+    }
+
+    void showBorrowHistory() {
+        if (borrowerCount > 0) {
+            cout << "Borrow history for " << title << ":" << endl;
+            for (int i = 0; i < borrowerCount; i++) {
+                cout << i+1 << ". " << borrowerList[i] << endl;
+            }
+        } else {
+            cout << "No borrow history for " << title << endl;
+        }
+    }
+
+    string getTitle() const { return title; }
+};
+
+class Book : public Media {
+private:
+    string author;
+    string ISBN;
+    int numberOfPages;
+
+public:
+    Book(string t, string a, string isbn, int pages, string pd, string id, string pub)
+        : Media(t, pd, id, pub), author(a), ISBN(isbn), numberOfPages(pages) {}
+
+    void displayInfo() override {
+        cout << "BOOK DETAILS" << endl;
+        Media::displayInfo();
+        cout << "Author: " << author << endl;
+        cout << "ISBN: " << ISBN << endl;
+        cout << "Pages: " << numberOfPages << endl;
+    }
+
+    string getAuthor() const { return author; }
+};
+
+class DVD : public Media {
+private:
+    string director;
+    int duration; // in minutes
+    string rating;
+
+public:
+    DVD(string t, string dir, int dur, string rate, string pd, string id, string pub)
+        : Media(t, pd, id, pub), director(dir), duration(dur), rating(rate) {}
+
+    void displayInfo() override {
+        cout << "DVD DETAILS" << endl;
+        Media::displayInfo();
+        cout << "Director: " << director << endl;
+        cout << "Duration: " << duration << " minutes" << endl;
+        cout << "Rating: " << rating << endl;
+    }
+};
+
+class CD : public Media {
+private:
+    string artist;
+    int numberOfTracks;
+    string genre;
+
+public:
+    CD(string t, string art, int tracks, string g, string pd, string id, string pub)
+        : Media(t, pd, id, pub), artist(art), numberOfTracks(tracks), genre(g) {}
+
+    void displayInfo() override {
+        cout << "CD DETAILS" << endl;
+        Media::displayInfo();
+        cout << "Artist: " << artist << endl;
+        cout << "Tracks: " << numberOfTracks << endl;
+        cout << "Genre: " << genre << endl;
+    }
+};
+
+class Magazine : public Media {
+private:
+    string issueNumber;
+    int volume;
+
+public:
+    Magazine(string t, string issue, int vol, string pd, string id, string pub)
+        : Media(t, pd, id, pub), issueNumber(issue), volume(vol) {}
+
+    void displayInfo() override {
+        cout << "MAGAZINE DETAILS" << endl;
+        Media::displayInfo();
+        cout << "Issue: " << issueNumber << endl;
+        cout << "Volume: " << volume << endl;
+    }
+};
+
+class Library {
+private:
+    Media* collection[MAX_ITEMS];
+    int itemCount;
+
+public:
+    Library() : itemCount(0) {}
+
+    bool addItem(Media* item) {
+        if (itemCount < MAX_ITEMS) {
+            collection[itemCount++] = item;
+            return true;
+        }
+        cout << "Library collection is full!" << endl;
+        return false;
+    }
+
+    void displayAll() {
+        cout << "\nLIBRARY COLLECTION (" << itemCount << " items)\n" << endl;
+        for (int i = 0; i < itemCount; i++) {
+            collection[i]->displayInfo();
+            cout << "---------------------" << endl;
+        }
+    }
+
+    Media* searchByTitle(string title) {
+        for (int i = 0; i < itemCount; i++) {
+            if (collection[i]->getTitle() == title) {
+                return collection[i];
+            }
+        }
+        return nullptr;
+    }
+
+    void searchByAuthor(string author) {
+        bool found = false;
+        for (int i = 0; i < itemCount; i++) {
+            Book* book = dynamic_cast<Book*>(collection[i]);
+            if (book && book->getAuthor() == author) {
+                book->displayInfo();
+                found = true;
+                cout << "---------------------" << endl;
+            }
+        }
+        if (!found) {
+            cout << "No items found by author " << author << endl;
+        }
+    }
+};
+
+int main() {
+    Library library;
+
+    library.addItem(new Book("The Great Gatsby", "F. Scott Fitzgerald", "9780743273565", 
+                            180, "1925-04-10", "BK001", "Scribner"));
+    library.addItem(new DVD("Inception", "Christopher Nolan", 148, "PG-13", 
+                           "2010-07-16", "DVD001", "Warner Bros."));
+    library.addItem(new CD("Thriller", "Michael Jackson", 9, "Pop", 
+                          "1982-11-30", "CD001", "Epic Records"));
+    library.addItem(new Magazine("National Geographic", "July 2023", 244, 
+                                "2023-06-27", "MG001", "National Geographic Society"));
+
+    cout << "=== LIBRARY MANAGEMENT SYSTEM ===" << endl;
+    
+    library.displayAll();
+
+    Media* item = library.searchByTitle("Inception");
+    if (item) {
+        item->checkOut("John Doe");
+        item->displayInfo();
+    }
+
+    cout << "\nSearching for books by F. Scott Fitzgerald:" << endl;
+    library.searchByAuthor("F. Scott Fitzgerald");
+
+    if (item) {
+        item->returnItem();
+        item->displayInfo();
+    }
+    
+    if (item) {
+        item->checkOut("Jane Smith");
+        item->checkOut("Robert Johnson");
+        item->showBorrowHistory();
+    }
+
+    return 0;
+}
