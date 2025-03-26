@@ -1,0 +1,63 @@
+#include <iostream>
+#include <string>
+using namespace std;
+class Currency{
+    protected:
+        double amount;
+        string currencyCode;
+        string currencySymbol;
+        double exchangeRate;
+    public:
+        Currency(double a, string cc, string cs, double er): amount(a), currencyCode(cc), currencySymbol(cs), exchangeRate(er){}
+        virtual double convertToBase(){
+            return amount * exchangeRate;
+        }//Considering US Dollar as a base currency
+        virtual double convertTo(double targetExchangeRate){
+            return amount * (exchangeRate/targetExchangeRate);
+        }
+        virtual void displayCurrency(){
+            cout << "Amount: " << currencySymbol << amount << " (" << currencyCode << ")" << endl;
+            cout << "Exchange Rate to Base: " << exchangeRate << endl;
+        }
+};
+class Dollar: public Currency{
+    public:
+        Dollar(double a) : Currency(a, "USD", "$", 1.0){}
+        void displayCurrency(){
+            cout<<"US Dollars Details: "<<endl;
+            Currency :: displayCurrency();
+        }
+};
+class Euro: public Currency{
+    public:
+        Euro(double a) : Currency(a, "EUR", "€", 1.08){}//Assuming 1€ = 1.08$
+        void displayCurrency(){
+            cout<<"Euro Details: "<<endl;
+            Currency :: displayCurrency();
+        }
+};
+class Rupee: public Currency{
+    public:
+        Rupee(double a) : Currency(a, "PKR", "Rs", 0.012){}//Assuming one Rs = 0.012 $
+        void displayCurrency(){
+            cout<<"Rupee Details: "<<endl;
+            Currency :: displayCurrency();
+        }
+};
+int main() {
+    Dollar usd(100);
+    usd.displayCurrency();
+    cout << "Converted to Base (USD): " << usd.convertToBase() << " USD" << endl;
+
+    Euro eur(100);
+    eur.displayCurrency();
+    cout << "Converted to Base (USD): " << eur.convertToBase() << " USD" << endl;
+    cout << "Converted to PKR: " << eur.convertTo(0.012) << " PKR" << endl;
+
+    Rupee pkr(1000);
+    pkr.displayCurrency();
+    cout << "Converted to Base (USD): " << pkr.convertToBase() << " USD" << endl;
+    cout << "Converted to EUR: " << pkr.convertTo(1.08) << " EUR" << endl;
+
+    return 0;
+}
