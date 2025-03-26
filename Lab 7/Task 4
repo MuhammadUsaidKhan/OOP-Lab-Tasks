@@ -1,0 +1,213 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int MAX_COURSES = 10;
+const int MAX_STUDENTS = 50;
+
+class Person {
+protected:
+    string name;
+    string id;
+    string address;
+    string phoneNumber;
+    string email;
+
+public:
+    Person(string n, string i, string a = "", string p = "", string e = "")
+        : name(n), id(i), address(a), phoneNumber(p), email(e) {}
+
+    virtual void displayInfo() {
+        cout << "Name: " << name << endl;
+        cout << "ID: " << id << endl;
+        if (!address.empty()) cout << "Address: " << address << endl;
+        if (!phoneNumber.empty()) cout << "Phone: " << phoneNumber << endl;
+        if (!email.empty()) cout << "Email: " << email << endl;
+    }
+
+    virtual void updateInfo(string a, string p, string e) {
+        address = a;
+        phoneNumber = p;
+        email = e;
+    }
+};
+
+class Student : public Person {
+private:
+    string coursesEnrolled[MAX_COURSES];
+    int courseCount;
+    double gpa;
+    int enrollmentYear;
+
+public:
+    Student(string n, string i, int year, double g = 0.0, string a = "", string p = "", string e = "")
+        : Person(n, i, a, p, e), gpa(g), enrollmentYear(year), courseCount(0) {}
+
+    void enrollCourse(string courseCode) {
+        if (courseCount < MAX_COURSES) {
+            coursesEnrolled[courseCount++] = courseCode;
+        } else {
+            cout << "Cannot enroll in more courses (max reached)" << endl;
+        }
+    }
+
+    void displayInfo() override {
+        cout << "STUDENT INFORMATION" << endl;
+        Person::displayInfo();
+        cout << "Enrollment Year: " << enrollmentYear << endl;
+        cout << "GPA: " << gpa << endl;
+        if (courseCount > 0) {
+            cout << "Courses Enrolled: ";
+            for (int i = 0; i < courseCount; i++) {
+                cout << coursesEnrolled[i] << " ";
+            }
+            cout << endl;
+        }
+    }
+};
+
+class Professor : public Person {
+private:
+    string department;
+    string coursesTaught[MAX_COURSES];
+    int courseCount;
+    double salary;
+
+public:
+    Professor(string n, string i, string dept, double sal, string a = "", string p = "", string e = "")
+        : Person(n, i, a, p, e), department(dept), salary(sal), courseCount(0) {}
+
+    void assignCourse(string courseCode) {
+        if (courseCount < MAX_COURSES) {
+            coursesTaught[courseCount++] = courseCode;
+        } else {
+            cout << "Cannot assign more courses (max reached)" << endl;
+        }
+    }
+
+    void displayInfo() override {
+        cout << "PROFESSOR INFORMATION" << endl;
+        Person::displayInfo();
+        cout << "Department: " << department << endl;
+        cout << "Salary: $" << salary << endl;
+        if (courseCount > 0) {
+            cout << "Courses Teaching: ";
+            for (int i = 0; i < courseCount; i++) {
+                cout << coursesTaught[i] << " ";
+            }
+            cout << endl;
+        }
+    }
+};
+
+class Staff : public Person {
+private:
+    string department;
+    string position;
+    double salary;
+
+public:
+    Staff(string n, string i, string dept, string pos, double sal, string a = "", string p = "", string e = "")
+        : Person(n, i, a, p, e), department(dept), position(pos), salary(sal) {}
+
+    void displayInfo() override {
+        cout << "STAFF INFORMATION" << endl;
+        Person::displayInfo();
+        cout << "Department: " << department << endl;
+        cout << "Position: " << position << endl;
+        cout << "Salary: $" << salary << endl;
+    }
+};
+
+class Course {
+private:
+    string courseId;
+    string courseName;
+    int credits;
+    Person* instructor;
+    Person* students[MAX_STUDENTS];
+    int studentCount;
+    string schedule;
+
+public:
+    Course(string id, string name, int cred, string sched)
+        : courseId(id), courseName(name), credits(cred), schedule(sched), 
+          instructor(nullptr), studentCount(0) {}
+
+    void assignInstructor(Person* prof) {
+        instructor = prof;
+    }
+
+    void registerStudent(Person* student) {
+        if (studentCount < MAX_STUDENTS) {
+            students[studentCount++] = student;
+        } else {
+            cout << "Cannot register more students (max reached)" << endl;
+        }
+    }
+
+    void displayInfo() {
+        cout << "COURSE INFORMATION" << endl;
+        cout << "Course ID: " << courseId << endl;
+        cout << "Course Name: " << courseName << endl;
+        cout << "Credits: " << credits << endl;
+        cout << "Schedule: " << schedule << endl;
+        
+        if (instructor) {
+            cout << "\nInstructor:" << endl;
+            instructor->displayInfo();
+        }
+        
+        if (studentCount > 0) {
+            cout << "\nEnrolled Students (" << studentCount << "):" << endl;
+            for (int i = 0; i < studentCount; i++) {
+                students[i]->displayInfo();
+                cout << "-----" << endl;
+            }
+        }
+    }
+};
+
+int main() {
+    // Create people
+    Student student1("Usaid Khan", "S1001", 2022, 3.8);
+    Student student2("Ali Khurram", "S1002", 2023);
+    
+    Professor prof1("Sir Shafique", "P2001", "OOP Lab", 85000);
+    Professor prof2("Sir Mairaj", "P2002", "Mathematics", 92000);
+    
+    Staff staff1("Sufyaan", "E3001", "Registrar", "Office Manager", 65000);
+
+    Course cs101("CS101", "Introduction to Programming", 4, "Mon/Wed 10:00-11:30");
+    Course math201("MATH201", "Calculus II", 3, "Tue/Thu 13:00-14:30");
+
+    cs101.assignInstructor(&prof1);
+    math201.assignInstructor(&prof2);
+
+    cs101.registerStudent(&student1);
+    cs101.registerStudent(&student2);
+    math201.registerStudent(&student1);
+
+    student1.enrollCourse("CS101");
+    student1.enrollCourse("MATH201");
+    student2.enrollCourse("CS101");
+
+    prof1.assignCourse("CS101");
+    prof2.assignCourse("MATH201");
+
+    cout << "=== UNIVERSITY MANAGEMENT SYSTEM ===" << endl << endl;
+    
+    cout << "--- People Information ---" << endl;
+    student1.displayInfo();
+    cout << endl;
+    prof1.displayInfo();
+    cout << endl;
+    staff1.displayInfo();
+    
+    cout << "\n--- Course Information ---" << endl;
+    cs101.displayInfo();
+    cout << endl;
+    math201.displayInfo();
+
+    return 0;
+}
