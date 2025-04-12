@@ -1,0 +1,162 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+class BankAccount {
+protected:
+    string accountNumber;
+    double balance;
+public:
+    BankAccount(string accNum, double bal) : accountNumber(accNum), balance(bal) {}
+
+    virtual double calculateInterest() const = 0;
+
+    virtual void deposit(double amount) {
+        balance += amount;
+        cout << "Deposited $" << amount << " to account " << accountNumber << endl;
+    }
+
+    virtual void deposit(double amount, string checkNumber) {
+        balance += amount;
+        cout << "Deposited $" << amount << " via check #" << checkNumber 
+             << " to account " << accountNumber << endl;
+    }
+
+    virtual void deposit(double amount, bool isOnline) {
+        balance += amount;
+        cout << "Deposited $" << amount << " via " 
+             << (isOnline ? "online transfer" : "other method") 
+             << " to account " << accountNumber << endl;
+    }
+
+    virtual bool withdraw(double amount) = 0;
+
+    double operator+(const BankAccount& a) const {
+        return this->balance + a.balance;
+    }
+
+    double operator-(double amount) const {
+        return this->balance - amount;
+    }
+
+    double operator*(double rate) const {
+        return this->balance * rate;
+    }
+
+    double operator/(int installments) const {
+        if (installments == 0) {
+            cerr << "Error: Division by zero!" << endl;
+            return this->balance;
+        }
+        return this->balance / installments;
+    }
+
+    virtual void display() const {
+        cout << "Account Number: " << accountNumber 
+             << "\nBalance: $" << fixed << setprecision(2) << balance << endl;
+    }
+
+    double getBalance() const { return balance; }
+    string getAccountNumber() const { return accountNumber; }
+};
+
+class SavingsAccount : public BankAccount {
+private:
+    const double INTEREST_RATE = 0.05; 
+
+public:
+    SavingsAccount(string accNum, double bal) : BankAccount(accNum, bal) {}
+
+    double calculateInterest() const override {
+        return balance * INTEREST_RATE;
+    }
+
+    bool withdraw(double amount) override {
+        if (balance - amount < 500) {
+            cout << "Withdrawal denied. Savings account must maintain minimum $500 balance." << endl;
+            return false;
+        }
+        balance -= amount;
+        cout << "Withdrew $" << amount << " from savings account " << accountNumber << endl;
+        return true;
+    }
+
+    void display() const override {
+        cout << "Savings Account ";
+        BankAccount::display();
+        cout << "Annual Interest: $" << calculateInterest() << endl;
+    }
+};
+
+class CurrentAccount : public BankAccount {
+private:
+    const double OVERDRAFT_LIMIT = 1000;
+
+public:
+    CurrentAccount(string accNum, double bal) : BankAccount(accNum, bal) {}
+
+    double calculateInterest() const override {
+        return 0; 
+    }
+
+    bool withdraw(double amount) override {
+        if (balance - amount < -OVERDRAFT_LIMIT) {
+            cout << "Withdrawal denied. Overdraft limit ($1000) exceeded." << endl;
+            return false;
+        }
+        balance -= amount;
+        cout << "Withdrew $" << amount << " from current account " << accountNumber << endl;
+        return true;
+    }
+
+    void display() const override {
+        cout << "Current Account ";
+        BankAccount::display();
+    }
+};
+
+int main() {
+    cout << "Bank Account Management System\n" << endl;
+
+    SavingsAccount sa("SA001", 2000);
+    CurrentAccount ca("CA001", 3000);
+
+    sa.deposit(500);                     
+    sa.deposit(300, "CHK12345");         
+    sa.deposit(200, true);               
+
+    ca.deposit(1000);                    
+    ca.deposit(500, "CHK67890");         
+    ca.deposit(300, false);              
+
+    cout << "\nAccount Details After Deposits:" << endl;
+    sa.display();
+    ca.display();
+
+    cout << "\nWithdrawal Attempts:" << endl;
+    sa.withdraw(1800);  
+    sa.withdraw(1000);  
+    ca.withdraw(4500);  
+    ca.withdraw(3500);  
+
+    cout << "\nAccount Details After Withdrawals:" << endl;
+    sa.display();
+    ca.display();
+
+    cout << "\nOperator Overloading Examples:" << endl;
+    
+    double total = sa + ca;
+    cout << "Combined balance of both accounts: $" << total << endl;
+    
+    double difference = sa - 500;
+    cout << "Savings balance minus $500: $" << difference << endl;
+    
+    double interestApplied = sa * 1.05; 
+    cout << "Savings balance with 5% interest: $" << interestApplied << endl;
+    
+    double installments = ca / 4;
+    cout << "Current account balance split into 4 equal payments: $" << installments << endl;
+
+    return 0;
+}
