@@ -1,0 +1,60 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Account{
+    protected:
+        string accountNumber;
+        string accountHolder;
+        double balance;
+    public:
+        Account(string number, string holder, double bal)
+            : accountNumber(number), accountHolder(holder), balance(bal) {}
+        Account operator+(const Account& a){
+            double total = this->balance + a.balance;
+            return Account("TEMP", "Combined", total);
+        }
+        Account operator=(double amount){
+            this->balance -= amount;
+            return *this;
+        }
+        bool operator>(const Account& a){
+            return this->balance > a.balance;
+        }
+        friend ostream& operator<<(ostream& os, const Account& a);
+        string getAccountNumber() const { return accountNumber; }
+        string getAccountHolder() const { return accountHolder; }
+        double getBalance() const { return balance; }
+        void receive(double amount) {
+        balance += amount;
+        }
+};
+ostream& operator<<(ostream& os, const Account& a){
+    os<<"Account Number: "<<a.accountNumber<<" | Holder: "<<a.accountHolder<<" | Balance: $"<<a.balance;
+    return os;
+}
+int main(){
+    Account acc1("101", "Shafique Rehman", 5000);
+    Account acc2("102", "Talha", 3000);
+
+    Account total = acc1 + acc2;
+    cout << "Total Balance (After Addition): " << total.getBalance() << endl << endl;
+
+    acc1 = 2000;  // Deduct from acc1
+    acc2.receive(2000);  // Add to acc2
+    cout << "After Transfer:" << endl;
+    cout << acc1.getAccountHolder() << "'s New Balance: " << acc1.getBalance() << endl;
+    cout << acc2.getAccountHolder() << "'s New Balance: " << acc2.getBalance() << endl << endl;
+
+    cout << "Comparison:" << endl;
+    if (acc1 > acc2) {
+        cout << acc1.getAccountHolder() << " has more balance than " << acc2.getAccountHolder() << endl;
+    } else {
+        cout << acc1.getAccountHolder() << " has less balance than " << acc2.getAccountHolder() << endl;}
+    cout<<endl;
+    cout<<"Final Account Details: "<<endl;
+    cout<<acc1<<endl;
+    cout<<acc2;
+    
+    return 0;
+}
