@@ -1,0 +1,254 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+class ShoppingCart;
+
+class Product {
+protected:
+    string productID;
+    double price;
+    string category;
+
+public:
+    Product(string id, double p, string cat) : productID(id), price(p), category(cat) {}
+
+    virtual double calculatePrice() const = 0;
+
+    string getProductID() const { return productID; }
+    double getBasePrice() const { return price; }
+    string getCategory() const { return category; }
+
+    virtual void display() const {
+        cout << "Product ID: " << productID 
+             << " | Category: " << category 
+             << " | Base Price: $" << fixed << setprecision(2) << price;
+    }
+};
+
+class Electronics : virtual public Product {
+private:
+    const double TAX_RATE = 0.15;
+
+public:
+    Electronics(string id, double p) : Product(id, p, "Electronics") {}
+
+    double calculatePrice() const override {
+        return price * (1 + TAX_RATE);
+    }
+
+    void display() const override {
+        Product::display();
+        cout << " | Final Price (with 15% tax): $" << calculatePrice() << endl;
+    }
+};
+
+class Clothing : public Product {
+private:
+    const double TAX_RATE = 0.05;
+
+public:
+    Clothing(string id, double p) : Product(id, p, "Clothing") {}
+
+    double calculatePrice() const override {
+        return price * (1 + TAX_RATE);
+    }
+
+    void display() const override {
+        Product::display();
+        cout << " | Final Price (with 5% tax): $" << calculatePrice() << endl;
+    }
+};
+
+class ShoppingCart {
+private:
+    static const int MAX_ITEMS = 100;
+    Product* items[MAX_ITEMS];
+    int itemCount;
+    string userType; 
+
+public:
+    ShoppingCart(string type = "Regular") : itemCount(0), userType(type) {
+        for (int i = 0; i < MAX_ITEMS; i++) {
+            items[i] = nullptr;
+        }
+    }
+
+    void addItem(Product* product) {
+        if (itemCount < MAX_ITEMS) {
+            items[itemCount++] = product;
+        } else {
+            cout << "Cart is full!" << endl;
+        }
+    }
+
+    bool removeItem(string productID) {
+        for (int i = 0; i < itemCount; i++) {
+            if (items[i]->getProductID() == productID) {
+                for (int j = i; j < itemCount - 1; j++) {
+                    items[j] = items[j + 1];
+                }
+                itemCount--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void applyDiscount(double percentage) {
+        for (int i = 0; i < itemCount; i++) {
+            double discountedPrice = items[i]->getBasePrice() * (1 - percentage/100);
+            if (items[i]->getCategory() == "Electronics") {
+                items[i] = new Electronics(items[i]->getProductID(), discountedPrice);
+            } else {
+                items[i] = new Clothing(items[i]->getProductID(), discountedPrice);
+            }
+        }
+        cout << "Applied " << percentage << "% discount to all items" << endl;
+    }
+
+    void applyDiscount(int fixedAmount) {
+        for (int i = 0; i < itemCount; i++) {
+            double discountedPrice = items[i]->getBasePrice() - fixedAmount;
+            if (discountedPrice < 0) discountedPrice = 0;
+            
+            if (items[i]->getCategory() == "Electronics") {
+                items[i] = new Electronics(items[i]->getProductID(), discountedPrice);
+            } else {
+                items[i] = new Clothing(items[i]->getProductID(), discountedPrice);
+            }
+        }
+        cout << "Applied $" << fixedAmount << " fixed discount to all items" << endl;
+    }
+
+    void applyDiscount(bool isBOGOF) {
+        if (!isBOGOF) return;
+        
+        for (int i = 0; i < itemCount; i++) {
+            double discountedPrice = items[i]->getBasePrice() * 0.5;
+            
+            if (items[i]->getCategory() == "Electronics") {
+                items[i] = new Electronics(items[i]->getProductID(), discountedPrice);
+            } else {
+                items[i] = new Clothing(items[i]->getProductID(), discountedPrice);
+            }
+        }
+        cout << "Applied Buy One Get One Free discount" << endl;
+    }
+
+    ShoppingCart operator+(const ShoppingCart& other) {
+        ShoppingCart result(this->userType);
+        
+        for (int i = 0; i < this->itemCount; i++) {
+            result.addItem(this->items[i]);
+        }
+        
+        for (int i = 0; i < other.itemCount; i++) {
+            result.addItem(other.items[i]);
+        }
+        
+        return result;
+    }
+
+    ShoppingCart operator-(Product* itemToRemove) {
+        ShoppingCart result(this->userType);
+        
+        for (int i = 0; i < this->itemCount; i++) {
+            if (this->items[i]->getProductID() != itemToRemove->getProductID()) {
+                result.addItem(this->items[i]);
+            }
+        }
+        
+        return result;
+    }
+
+    ShoppingCart operator*(double bulkDiscount) {
+        ShoppingCart result(this->userType);
+        
+        for (int i = 0; i < this->itemCount; i++) {
+            double discountedPrice = this->items[i]->getBasePrice() * (1 - bulkDiscount);
+            
+            if (this->items[i]->getCategory() == "Electronics") {
+                result.addItem(new Electronics(this->items[i]->getProductID(), discountedPrice));
+            } else {
+                result.addItem(new Clothing(this->items[i]->getProductID(), discountedPrice));
+            }
+        }
+        
+        return result;
+    }
+
+    double operator/(int numUsers) {
+        if (numUsers <= 0) return 0;
+        return this->calculateTotal() / numUsers;
+    }
+
+    double calculateTotal() const {
+        double total = 0;
+        for (int i = 0; i < itemCount; i++) {
+            total += items[i]->calculatePrice();
+        }
+        
+        if (userType == "Premium") {
+            total *= 0.9; 
+        }
+        
+        return total;
+    }
+
+    void displayCart() const {
+        cout << "\nShopping Cart Contents (" << userType << " User):" << endl;
+        for (int i = 0; i < itemCount; i++) {
+            items[i]->display();
+        }
+        cout << "Total: $" << calculateTotal() << endl;
+    }
+};
+
+int main() {
+    cout << "E-Commerce Shopping System\n" << endl;
+
+    Electronics laptop("E1001", 1000);
+    Electronics phone("E1002", 800);
+    Clothing shirt("C2001", 50);
+    Clothing pants("C2002", 70);
+
+    ShoppingCart regularCart("Regular");
+    ShoppingCart premiumCart("Premium");
+
+    regularCart.addItem(&laptop);
+    regularCart.addItem(&shirt);
+    
+    premiumCart.addItem(&phone);
+    premiumCart.addItem(&pants);
+
+    cout << "Initial Carts:" << endl;
+    regularCart.displayCart();
+    premiumCart.displayCart();
+
+    cout << "\nApplying Discounts:" << endl;
+    regularCart.applyDiscount(10.0); // 10% off
+    premiumCart.applyDiscount(20);   // $20 off
+    regularCart.displayCart();
+    premiumCart.displayCart();
+
+    cout << "\nOperator Overloading Examples:" << endl;
+    
+    ShoppingCart combinedCart = regularCart + premiumCart;
+    cout << "After merging carts:" << endl;
+    combinedCart.displayCart();
+    
+    ShoppingCart reducedCart = combinedCart - &shirt;
+    cout << "After removing shirt:" << endl;
+    reducedCart.displayCart();
+    
+    ShoppingCart discountedCart = combinedCart * 0.15; // 15% bulk discount
+    cout << "After 15% bulk discount:" << endl;
+    discountedCart.displayCart();
+    
+    double perPerson = combinedCart / 2;
+    cout << "When splitting between 2 people: $" << perPerson << " each" << endl;
+
+    return 0;
+}
