@@ -1,94 +1,191 @@
 #include <iostream>
 #include <string>
 using namespace std;
-#include <cmath>
-class Device{
-    protected:
-        string deviceID;
-        string deviceType;
-        double powerRating;
-        bool status;
-    public:
-        Device(string did, string dt, double pr, bool s): deviceID(deviceID), deviceType(dt), powerRating(pr), status(s){}
-        virtual void turnOn(){
-            status = true;
-        }
-        virtual void turnOff(){
-            status = false;
-        }
-        virtual double calculatePowerUsage(int hours){
-            cout<<"This Functionality is not defined for this class!"<<endl;
-            return 0.0;
-        }
+
+class SecuritySystem;
+class MaintenanceTool;
+
+// Base Device class
+class Device {
+protected:
+    string deviceID;
+    string deviceType;
+    double powerRating;
+    bool status;
+
+public:
+    Device(string id, string type, double rating) 
+        : deviceID(id), deviceType(type), powerRating(rating), status(false) {}
+
+    virtual void turnOn() {
+        status = true;
+        cout << deviceType << " [ID: " << deviceID << "] turned ON." << endl;
+    }
+
+    virtual void turnOff() {
+        status = false;
+        cout << deviceType << " [ID: " << deviceID << "] turned OFF." << endl;
+    }
+
+    virtual double calculatePowerUsage(int hours) {
+        return powerRating * hours;
+    }
+
+    string getDeviceID() const { return deviceID; }
+    string getDeviceType() const { return deviceType; }
+    bool getStatus() const { return status; }
 };
-class Fans: public Device{
-    private:
-        double speedFactor;
-    public:
-        virtual void turnOn(){
-            status = true;
-            cout<<"Ceiling Fan [ID: "<<deviceID<<"] turned ON at Speed "<<speedFactor<<endl;
-        }
-        virtual void turnOff(){
-            status = false;
-            cout<<"Ceiling Fan [ID: "<<deviceID<<"] turned OFF at Speed "<<speedFactor<<endl;
-        }
-        Fans(string did, string dt, double pr, bool s, double sf) : Device(did, dt, pr, s), speedFactor(sf){}
-        double calculatePowerUsage(int hours){
-            double rating = powerRating * hours * speedFactor;
-            return rating;
-        }
-        
+
+class Light : virtual public Device {
+public:
+    Light(string id, string type, double rating) : Device(id, type, rating) {}
 };
-class Lights: public Device{
-    public:
-        virtual void turnOn(){
-            status = true;
-            cout<<"LED Light [ID: "<<deviceID<<"] turned ON"<<endl;
-        }
-        virtual void turnOff(){
-            status = false;
-            cout<<"LED Light [ID: "<<deviceID<<"] turned OFF"<<endl;
-        }
-    Lights(string did, string dt, double pr, bool s): Device(did, dt, pr, s){}
-        double calculatePowerUsage(int hours){
-            double rating = powerRating * hours;
-            return rating;
-        }
+
+class Fan : virtual public Device {
+private:
+    int speedFactor;
+
+public:
+    Fan(string id, string type, double rating, int speed) 
+        : Device(id, type, rating), speedFactor(speed) {}
+
+    void turnOn() override {
+        status = true;
+        cout << deviceType << " [ID: " << deviceID << "] turned ON at Speed " << speedFactor << "." << endl;
+    }
+
+    double calculatePowerUsage(int hours) override {
+        return powerRating * hours * speedFactor;
+    }
 };
-class AirConditioners: public Device{
-    private:
-        int currentTemp = new int;
-        int desiredTemp = new int;
-    public:
-        virtual void turnOn(){
-            status = true;
-            cout<<"Split AC [ID: "<<deviceID<<"] turned ON, Cooling to "<<currentTemp<<"°C"<<endl;
-        }
-        virtual void turnOff(){
-            status = false;
-            cout<<"Split AC [ID: "<<deviceID<<"] turned OFF, Cooling to "<<currentTemp<<"°C"<<endl;
-        }
-        AirConditioners(string did, string dt, double pr, bool s, int ct, int dt): Device(did, dt, pr, s), currentTemp(ct), desiredTemp(dt){}
-        double calculatePowerUsage(int hours){
-            double rating = powerRating * hours * (1 - (currentTemp - desiredTemp)/100);
-            return rating;
-        }
+
+class AirConditioner : virtual public Device {
+private:
+    int desiredTemp;
+
+public:
+    AirConditioner(string id, string type, double rating, int temp) 
+        : Device(id, type, rating), desiredTemp(temp) {}
+
+    void turnOn() override {
+        status = true;
+        cout << deviceType << " [ID: " << deviceID << "] turned ON. Cooling to " << desiredTemp << "°C." << endl;
+    }
+
+    double calculatePowerUsage(int hours) override {
+        int currentTemp = desiredTemp + 10; // Example: current temp is 10° higher than desired
+        return powerRating * hours * (1 - (currentTemp - desiredTemp) / 100.0);
+    }
 };
-class SecuritySystems{
-    private;
-        bool securityStatus;
-    public:
-        SecuritySystems(string did, string dt, double pr, bool s, bool ss) : Device(did, dt, pr, s), securityStatus(ss){}
-        virtual void turnOn(){
-            status = true;
-            cout<<"Split AC [ID: "<<deviceID<<"] turned ON, Cooling to "<<currentTemp<<"°C"<<endl;
-        }
-        virtual void turnOff(){
-            status = false;
-            cout<<"Split AC [ID: "<<deviceID<<"] turned OFF, Cooling to "<<currentTemp<<"°C"<<endl;
-        }
+
+class SecuritySystem : virtual public Device {
+private:
+    bool securityAlert;
+    friend class MaintenanceTool;
+    friend void accessSecurityLogs(const SecuritySystem& secSys, string userRole);
+
+public:
+    SecuritySystem(string id, string type, double rating) 
+        : Device(id, type, rating), securityAlert(false) {}
+
+    void turnOn() override {
+        status = true;
+        cout << deviceType << " [ID: " << deviceID << "] activated." << endl;
+    }
+
+    void turnOff() override {
+        cout << "Authorization required to turn OFF security system!" << endl;
+    }
+
+    double calculatePowerUsage(int hours) override {
+        return powerRating * hours + (securityAlert ? 100 : 0); // Extra power if alert is active
+    }
+
+    void setAlert(bool alert) { securityAlert = alert; }
 };
+
+class MaintenanceTool {
+public:
+    static void resetAlerts(SecuritySystem& secSys) {
+        secSys.securityAlert = false;
+        cout << "Security alerts reset for system: " << secSys.deviceID << endl;
+    }
+};
+
+void accessSecurityLogs(const SecuritySystem& secSys, string userRole) {
+    if (userRole == "Maintenance Staff") {
+        cout << "Security Logs Accessed for " << secSys.deviceID << ":" << endl;
+        cout << "- Intrusion Detected at 3:00 AM" << endl;
+        cout << "- System " << (secSys.securityAlert ? "Needs Reset" : "Status Normal") << endl;
+    } else {
+        cout << "Access Denied: Only maintenance staff can view security logs." << endl;
+    }
+}
+
+class User {
+private:
+    string userID;
+    string userRole;
+    int accessLevel;
+
+public:
+    User(string id, string role, int level) : userID(id), userRole(role), accessLevel(level) {}
+
+    void viewAccessibleDevices(Device* devices[], int deviceCount) {
+        cout << "User: " << userID << " - Accessible Devices:" << endl;
+        for (int i = 0; i < deviceCount; i++) {
+            string type = devices[i]->getDeviceType();
+            if (accessLevel >= 2 || type != "Home Alarm") {
+                cout << "- " << type << " [ID: " << devices[i]->getDeviceID() << "]" 
+                     << (devices[i]->getStatus() ? " (ON)" : " (OFF)") << endl;
+            }
+        }
+    }
+
+    string getUserRole() const { return userRole; }
+    int getAccessLevel() const { return accessLevel; }
+};
+
 int main() {
+    User user1("U001", "Regular User", 1);
+    User user2("U002", "Maintenance Staff", 2);
+
+    Device* devices[4];
+    devices[0] = new Light("L001", "LED Light", 10);
+    devices[1] = new Fan("F001", "Ceiling Fan", 75, 3);
+    devices[2] = new AirConditioner("AC001", "Split AC", 1500, 25);
+    devices[3] = new SecuritySystem("S001", "Home Alarm", 100);
+
+    devices[0]->turnOn();
+    devices[1]->turnOn();
+    devices[2]->turnOn();
+    devices[3]->turnOn();
+
+    SecuritySystem* secSys = dynamic_cast<SecuritySystem*>(devices[3]);
+    if (secSys) {
+        secSys->setAlert(true);
+    }
+
+    cout << "\nPower Consumption:" << endl;
+    cout << "LED Light: " << devices[0]->calculatePowerUsage(5) << " Watts" << endl;
+    cout << "Ceiling Fan: " << devices[1]->calculatePowerUsage(3) << " Watts" << endl;
+    cout << "Split AC: " << devices[2]->calculatePowerUsage(6) << " Watts" << endl;
+    cout << "Security System: " << devices[3]->calculatePowerUsage(24) << " Watts (Includes security checks)" << endl;
+
+    // Attempting to access security logs
+    cout << "\n";
+    user1.viewAccessibleDevices(devices, 4);
+    
+    cout << "\n";
+    if (secSys) {
+        accessSecurityLogs(*secSys, user2.getUserRole());
+        MaintenanceTool::resetAlerts(*secSys);
+    }
+
+    // Clean up
+    for (int i = 0; i < 4; i++) {
+        delete devices[i];
+    }
+
     return 0;
 }
