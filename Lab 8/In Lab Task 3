@@ -1,0 +1,88 @@
+Question 1:
+Answer: Yes, a friend function can be used to overload operators that modify the invoking object, including the += operator.
+
+#include <iostream>
+using namespace std;
+
+class MyNumber {
+private:
+    int value;
+public:
+    MyNumber(int v) : value(v) {}
+    friend MyNumber& operator+=(MyNumber& left, const MyNumber& right);
+    int getValue() const { return value; }
+};
+
+MyNumber& operator+=(MyNumber& left, const MyNumber& right) {
+    left.value += right.value;  
+    return left;
+}
+
+int main() {
+    MyNumber num1(5);
+    MyNumber num2(3);
+    
+    num1 += num2;
+    cout << "After += operation: " << num1.getValue() << endl;
+    return 0;
+}
+
+Question 2:
+Answer: Yes, a friend function can handle cases where one operand is a primitive data type.
+
+#include <iostream>
+using namespace std;
+
+class MyNumber {
+private:
+    int value;
+public:
+    MyNumber(int v) : value(v) {}
+    friend MyNumber operator+(const MyNumber& left, int right);
+    int getValue() const { return value; }
+};
+
+MyNumber operator+(const MyNumber& left, int right) {
+    return MyNumber(left.value + right);  
+}
+
+int main() {
+    MyNumber num(5);
+    MyNumber result = num + 10; 
+    
+    cout << "Result: " << result.getValue() << endl;
+    return 0;
+}
+
+Qustion 3:
+Answer: No, a friend function must work with an object of the class to access private members. It cannot access them directly without an object.
+
+#include <iostream>
+using namespace std;
+
+class MyClass {
+private:
+    static int privateStatic;
+    int privateNonStatic;
+public:
+    MyClass(int val) : privateNonStatic(val) {}
+    
+    friend void friendFunction(const MyClass& obj);
+    
+    static void initStatic(int val) { privateStatic = val; }
+};
+
+int MyClass::privateStatic = 0;
+
+void friendFunction(const MyClass& obj) {
+    cout << "Accessing static private member: " << MyClass::privateStatic << endl;
+    cout << "Accessing non-static private member: " << obj.privateNonStatic << endl;
+}
+
+int main() {
+    MyClass::initStatic(100);
+    MyClass obj(42);
+    
+    friendFunction(obj);
+    return 0;
+}
